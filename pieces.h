@@ -31,7 +31,6 @@ typedef struct coordinates {
 class Piece {
     public:
         Piece();
-        ~Piece();
 
         char getChar(void);
         void setChar(char pieceCharacter);
@@ -39,42 +38,41 @@ class Piece {
         int getPlayer(void);
         void setPlayer(int player);
 
-        bool getEnPassant(void);
-        void setEnPassant(bool canEnPassant);
+        int getTurnMovedTwo(void);
+        void setTurnMovedTwo(int turnNum);
 
-        virtual ret_t movePiece(Piece*** board, const coordinates pos, const coordinates dest);
+        virtual ret_t movePiece(Piece*** board, const coordinates pos, const coordinates dest, int turnNum);
+
+
 
     private:
         int player;
         char pieceCharacter;
-        bool canEnPassant = false;
+        int turnMovedTwo = 0; // For pawns
 
-        virtual ret_t checkMove(Piece*** board, const coordinates pos, const coordinates dest);
+        virtual ret_t checkMove(Piece*** board, const coordinates pos, const coordinates dest, int turnNum);
 };
+
 
 class Empty : public Piece {
     public:
         Empty();
-        ~Empty();
-
-        ret_t movePiece(Piece*** board, const coordinates pos, const coordinates dest);
 
     private: 
-        ret_t checkMove(Piece*** board, const coordinates pos, const coordinates dest);
-
+        ret_t checkMove(Piece*** board, const coordinates pos, const coordinates dest, int turnNum) override;
 };
+
 
 class Pawn : public Piece {
     public:
         Pawn(int player);
-        ~Pawn();
 
-        ret_t movePiece(Piece*** board, const coordinates pos, const coordinates dest);
+        ret_t movePiece(Piece*** board, const coordinates pos, const coordinates dest, int turnNum) override; // Exists bc en passant
 
     private:
         bool hasMoved = false;
 
-        ret_t checkMove(Piece*** board, const coordinates pos, const coordinates dest);
+        ret_t checkMove(Piece*** board, const coordinates pos, const coordinates dest, int turnNum) override;
 };
 
 #endif

@@ -3,11 +3,8 @@
 // Base class for a game piece
 
 Piece::Piece(){
-
-}
-
-Piece::~Piece(){
-
+    player = NULL_PLAYER;
+    setChar(PIECE_CHARACTER);
 }
 
 char Piece::getChar(void){
@@ -26,22 +23,31 @@ void Piece::setPlayer(int player){
     this->player = player;
 }
 
-ret_t Piece::movePiece(Piece*** board, const coordinates pos, const coordinates dest){
+int Piece::getTurnMovedTwo(void){
+    return turnMovedTwo;
+}
+
+void Piece::setTurnMovedTwo(int turnNum){
+    turnMovedTwo = turnNum;
+}
+
+ret_t Piece::movePiece(Piece*** board, const coordinates pos, const coordinates dest, int turnNum){
+    if(checkMove(board, pos, dest, turnNum) != true){
+        return INVALID_MOVE;
+    }
+    
+    Piece* destPiece = board[dest.row][dest.col];
+    board[dest.row][dest.col] = board[pos.row][pos.col];
+
+    delete destPiece;
+    board[pos.row][pos.col] = new Empty;
+
+    return VALID_MOVE;
+}
+
+ret_t Piece::checkMove(Piece*** board, const coordinates pos, const coordinates dest, int turnNum){
     return INVALID_MOVE;
 }
-
-ret_t Piece::checkMove(Piece*** board, const coordinates pos, const coordinates dest){
-    return INVALID_MOVE;
-}
-
-bool Piece::getEnPassant(void){
-    return canEnPassant;
-}
-
-void Piece::setEnPassant(bool canEnPassant){
-    this->canEnPassant = canEnPassant;
-}
-
 
 // Empty tile
 
@@ -50,15 +56,7 @@ Empty::Empty(){
     setPlayer(NULL_PLAYER);
 }
 
-Empty::~Empty(){
-
-}
-
-ret_t Empty::movePiece(Piece*** board, const coordinates pos, const coordinates dest){
-    return INVALID_MOVE;
-}
-
-ret_t Empty::checkMove(Piece*** board, const coordinates pos, const coordinates dest){
+ret_t Empty::checkMove(Piece*** board, const coordinates pos, const coordinates dest, int turnNum){
     return INVALID_MOVE;
 }
 
@@ -69,18 +67,45 @@ Pawn::Pawn(int player){
     setPlayer(player);
 }
 
-Pawn::~Pawn(){
+ret_t Pawn::movePiece(Piece*** board, const coordinates pos, const coordinates dest, int turnNum){
+    if(checkMove(board, pos, dest, turnNum) != true){
+        return INVALID_MOVE;
+    }
 
-}
-
-ret_t Pawn::movePiece(Piece*** board, const coordinates pos, const coordinates dest){
-    return checkMove(board, pos, dest);
-    ////////////////////////// HERE /////////////////////////////////
-}
-
-ret_t Pawn::checkMove(Piece*** board, const coordinates pos, const coordinates dest){
     int dx = dest.col - pos.col;
     int dy = dest.row - pos.row;
+    
+    hasMoved = true;
+
+    // Jumping two spaces
+    if(dy == 2){
+        setTurnMovedTwo(turnNum);
+    } 
+
+    ////////////////// Left off here with pawn movement (plus bug in Pawn::checkMove)
+    
+    Piece* destPiece = board[dest.row][dest.col];
+
+    if(destPiece->getChar() == EMPTY_CHARACTER){
+        // En passant
+        destPiece = board[dest.row-1][dest.col]
+    } else {
+
+    }
+
+    board[dest.row][dest.col] = board[pos.row][pos.col];
+
+    delete destPiece;
+    board[pos.row][pos.col] = new Empty;
+
+    return VALID_MOVE;
+}
+
+ret_t Pawn::checkMove(Piece*** board, const coordinates pos, const coordinates dest, int turnNum){
+    int dx = dest.col - pos.col;
+    int dy = dest.row - pos.row;
+
+    //////////////////// Only did this for one player for some reason, so need to fix :(
 
     // Checks if the pawn is trying to move too far forwards or backwards
     if(dy > 2 || dy < 1){
@@ -112,7 +137,9 @@ ret_t Pawn::checkMove(Piece*** board, const coordinates pos, const coordinates d
             }
 
             // Check that there is no piece in front of the pawn
-            Piece* frontPiece = board[dest.row-1][dest.col];
+            Piece* frontPiece;
+            if(posPlayer == 1){ frontPiece = board[dest.row-1][dest.col]; }
+            else { frontPiece = board[dest.row+1][dest.col]; }
             if(frontPiece->getChar() != EMPTY_CHARACTER){
                 return INVALID_MOVE;
             }
@@ -127,10 +154,12 @@ ret_t Pawn::checkMove(Piece*** board, const coordinates pos, const coordinates d
             // dx == 1 or -1, dy == 1
             
             // Checking if the destination space is empty
-            if(destChar == EMPTY_CHARACTER || destChar == PIECE_CHARACTER){
+            if(destChar == EMPTY_CHARACTER){
                 // Only valid in en passant
-                Piece* sidePiece = board[dest.row-1][dest.col];
-                if(sidePiece->getEnPassant() != true){
+                Piece* sidePiece;
+                if(posPlayer == 1){ sidePiece = board[dest.row-1][dest.col]; }
+                else { sidePiece = board[dest.row+1][dest.col]; }
+                if(sidePiece->getTurnMovedTwo() != turnNum - 1){
                     return INVALID_MOVE;
                 }
                 

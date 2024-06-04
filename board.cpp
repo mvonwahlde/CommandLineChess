@@ -66,6 +66,6 @@ void Board::addPiece(Piece* piece, coordinates pos){
 
 ret_t Board::movePiece(coordinates pos, coordinates dest){
     Piece* piece = board[pos.row][pos.col];
-    cout << piece->movePiece(board, pos, dest) << endl;
+    cout << piece->movePiece(board, pos, dest, turnNum) << endl;
     return 0;
 }

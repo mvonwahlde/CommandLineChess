@@ -16,6 +16,9 @@ class Board{
         ret_t movePiece(coordinates pos, coordinates dest);
 
         Piece*** board;
+
+    private:
+        int turnNum = 1;
 };
 
 
