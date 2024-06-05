@@ -1,35 +1,40 @@
 #include "pieces.h"
 
+
+/////////////////////////////////////////////////////////////////////////////////
 // Base class for a game piece
+/////////////////////////////////////////////////////////////////////////////////
 
 Piece::Piece(){
     player = NULL_PLAYER;
     setChar(PIECE_CHARACTER);
 }
 
+
 char Piece::getChar(void){
     return pieceCharacter;
 }
+
 
 void Piece::setChar(char pieceCharacter){
     this->pieceCharacter = pieceCharacter;
 }
 
+
 int Piece::getPlayer(void){
     return player;
 }
+
 
 void Piece::setPlayer(int player){
     this->player = player;
 }
 
+
 int Piece::getTurnMovedTwo(void){
-    return turnMovedTwo;
+    return HAS_NOT_MOVED_TWO_SPACES;
 }
 
-void Piece::setTurnMovedTwo(int turnNum){
-    turnMovedTwo = turnNum;
-}
 
 ret_t Piece::movePiece(Piece*** board, const coordinates pos, const coordinates dest, int turnNum){
     if(checkMove(board, pos, dest, turnNum) != true){
@@ -45,27 +50,41 @@ ret_t Piece::movePiece(Piece*** board, const coordinates pos, const coordinates 
     return VALID_MOVE;
 }
 
+
 ret_t Piece::checkMove(Piece*** board, const coordinates pos, const coordinates dest, int turnNum){
     return INVALID_MOVE;
 }
 
-// Empty tile
+
+/////////////////////////////////////////////////////////////////////////////////
+// Empty Tile
+/////////////////////////////////////////////////////////////////////////////////
 
 Empty::Empty(){
     setChar(EMPTY_CHARACTER);
     setPlayer(NULL_PLAYER);
 }
 
+
 ret_t Empty::checkMove(Piece*** board, const coordinates pos, const coordinates dest, int turnNum){
     return INVALID_MOVE;
 }
 
+
+/////////////////////////////////////////////////////////////////////////////////
 // Pawn
+/////////////////////////////////////////////////////////////////////////////////
 
 Pawn::Pawn(int player){
     setChar(PAWN_CHARACTER);
     setPlayer(player);
 }
+
+
+int Pawn::getTurnMovedTwo(void){
+    return turnMovedTwo;
+}
+
 
 ret_t Pawn::movePiece(Piece*** board, const coordinates pos, const coordinates dest, int turnNum){
     if(checkMove(board, pos, dest, turnNum) != true){
@@ -75,24 +94,27 @@ ret_t Pawn::movePiece(Piece*** board, const coordinates pos, const coordinates d
     int dx = dest.col - pos.col;
     int dy = dest.row - pos.row;
     
+    int player = board[pos.row][pos.col]->getPlayer();
+    
     hasMoved = true;
 
     // Jumping two spaces
-    if(dy == 2){
-        setTurnMovedTwo(turnNum);
+    if(abs(dy) == 2){
+        turnMovedTwo = turnNum;
     } 
 
-    ////////////////// Left off here with pawn movement (plus bug in Pawn::checkMove)
+    // Check for en passant
+    if( abs(dy) == 1 && abs(dx == -1) ){
+        if(board[dest.row][dest.col]->getChar() == EMPTY_CHARACTER){
+            // En passant
+            int enPassantPieceRow = (player == P1) ? dest.row-1 : dest.row+1;
+            Piece* enPassantPiece = (player == P1) ? board[enPassantPieceRow][dest.col] : board[enPassantPieceRow][dest.col];
+            delete enPassantPiece;
+            board[enPassantPieceRow][dest.col] = new Empty;
+        }    
+    }
     
     Piece* destPiece = board[dest.row][dest.col];
-
-    if(destPiece->getChar() == EMPTY_CHARACTER){
-        // En passant
-        destPiece = board[dest.row-1][dest.col]
-    } else {
-
-    }
-
     board[dest.row][dest.col] = board[pos.row][pos.col];
 
     delete destPiece;
@@ -101,11 +123,17 @@ ret_t Pawn::movePiece(Piece*** board, const coordinates pos, const coordinates d
     return VALID_MOVE;
 }
 
+
 ret_t Pawn::checkMove(Piece*** board, const coordinates pos, const coordinates dest, int turnNum){
     int dx = dest.col - pos.col;
     int dy = dest.row - pos.row;
 
-    //////////////////// Only did this for one player for some reason, so need to fix :(
+    int posPlayer = this->getPlayer();
+    
+    // If its the second play, dy will be negative before this multplication
+    if(posPlayer == P2){
+        dy *= -1;
+    }
 
     // Checks if the pawn is trying to move too far forwards or backwards
     if(dy > 2 || dy < 1){
@@ -120,7 +148,6 @@ ret_t Pawn::checkMove(Piece*** board, const coordinates pos, const coordinates d
     Piece* destPiece = board[dest.row][dest.col];
     char destChar = destPiece->getChar();
     int destPlayer = destPiece->getPlayer();
-    int posPlayer = this->getPlayer();
 
     // Checks if the pawn is traveling straight
     if(dx == 0){
@@ -137,9 +164,8 @@ ret_t Pawn::checkMove(Piece*** board, const coordinates pos, const coordinates d
             }
 
             // Check that there is no piece in front of the pawn
-            Piece* frontPiece;
-            if(posPlayer == 1){ frontPiece = board[dest.row-1][dest.col]; }
-            else { frontPiece = board[dest.row+1][dest.col]; }
+            Piece* frontPiece = (posPlayer == P1) ? board[dest.row-1][dest.col] : board[dest.row+1][dest.col];
+
             if(frontPiece->getChar() != EMPTY_CHARACTER){
                 return INVALID_MOVE;
             }
@@ -156,11 +182,12 @@ ret_t Pawn::checkMove(Piece*** board, const coordinates pos, const coordinates d
             // Checking if the destination space is empty
             if(destChar == EMPTY_CHARACTER){
                 // Only valid in en passant
-                Piece* sidePiece;
-                if(posPlayer == 1){ sidePiece = board[dest.row-1][dest.col]; }
-                else { sidePiece = board[dest.row+1][dest.col]; }
-                if(sidePiece->getTurnMovedTwo() != turnNum - 1){
-                    return INVALID_MOVE;
+                Piece* sidePiece = (posPlayer == P1) ? board[dest.row-1][dest.col] : board[dest.row+1][dest.col];
+
+                if(sidePiece->getChar() != PAWN_CHARACTER && sidePiece->getTurnMovedTwo() != turnNum - 1){
+                    if( (posPlayer == P1 && destPlayer != P2) || (posPlayer == P2 && destPlayer != P1) ){
+                        return INVALID_MOVE;
+                    }
                 }
                 
             } else {

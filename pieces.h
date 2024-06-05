@@ -22,6 +22,8 @@ using namespace std;
 #define INVALID_MOVE 0
 #define VALID_MOVE   1
 
+#define HAS_NOT_MOVED_TWO_SPACES -1
+
 typedef int ret_t;
 typedef struct coordinates {
     int col;
@@ -38,17 +40,13 @@ class Piece {
         int getPlayer(void);
         void setPlayer(int player);
 
-        int getTurnMovedTwo(void);
-        void setTurnMovedTwo(int turnNum);
+        virtual int getTurnMovedTwo(void);
 
-        virtual ret_t movePiece(Piece*** board, const coordinates pos, const coordinates dest, int turnNum);
-
-
+        virtual ret_t movePiece(Piece*** board, const coordinates pos, const coordinates dest, int turnNum); 
 
     private:
         int player;
         char pieceCharacter;
-        int turnMovedTwo = 0; // For pawns
 
         virtual ret_t checkMove(Piece*** board, const coordinates pos, const coordinates dest, int turnNum);
 };
@@ -67,10 +65,13 @@ class Pawn : public Piece {
     public:
         Pawn(int player);
 
+        int getTurnMovedTwo(void) override;
+
         ret_t movePiece(Piece*** board, const coordinates pos, const coordinates dest, int turnNum) override; // Exists bc en passant
 
     private:
         bool hasMoved = false;
+        int turnMovedTwo = HAS_NOT_MOVED_TWO_SPACES;
 
         ret_t checkMove(Piece*** board, const coordinates pos, const coordinates dest, int turnNum) override;
 };
