@@ -1,6 +1,6 @@
 /*
 Author: Matthew VonWahlde
-Last Modified: 7/9/24
+Last Modified: 7/10/24
 Project: Command Line Chess
 File: Board.h
 Description: The header file for the Board object.
@@ -15,6 +15,7 @@ Description: The header file for the Board object.
 #include "Game_Pieces/Empty.h"
 #include "Game_Pieces/Pawn.h"
 #include "Game_Pieces/Knight.h"
+#include "Game_Pieces/Bishop.h"
 
 // Specify that the board has 8 rows and 8 columns
 #define NUM_BOARD_ROWS 8

@@ -8,7 +8,7 @@ CXXFLAGS = -Wall -std=c++11
 TARGET = chess.exe
 
 # Source files
-SRCS = main.cpp Board.cpp Game_Pieces\Piece.cpp Game_Pieces\Empty.cpp Game_Pieces\Pawn.cpp
+SRCS = main.cpp Board.cpp Game_Pieces\Piece.cpp Game_Pieces\Empty.cpp Game_Pieces\Pawn.cpp Game_Pieces\Knight.cpp Game_Pieces\Bishop.cpp
 
 # Object files
 OBJS = $(SRCS:.cpp=.o)
