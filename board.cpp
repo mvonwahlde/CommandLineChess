@@ -136,6 +136,22 @@ ret_t Board::movePiece(const coordinates& pos, const coordinates& dest){
     Piece* piece = board[pos.row][pos.col];   // The piece being moved
     coordinates extraDeletedPiece = {-1, -1}; // A set of coordinates for an additional piece being deleted (en passant)
 
+    // Check that the piece belongs to the correct player
+    int player = piece->getPlayer();
+    if(player != playersTurn){
+        return INVALID_MOVE;
+    }
+
+    // Check that the destination row is valid
+    if(dest.row >= NUM_BOARD_ROWS || dest.row < 0){
+        return INVALID_MOVE;
+    }
+
+    // Check that the destination column is valid
+    if(dest.col >= NUM_BOARD_COLS || dest.col < 0){
+        return INVALID_MOVE;
+    }
+
     // Try and move the piece
     ret_t isMoveValid = piece->movePiece(board, pos, dest, turnNum, extraDeletedPiece);
 
@@ -160,6 +176,10 @@ ret_t Board::movePiece(const coordinates& pos, const coordinates& dest){
     board[dest.row][dest.col] = board[pos.row][pos.col];
     board[pos.row][pos.col] = new Empty;
     delete deletedPiece;
+
+    // Increment the turn number and change the player
+    turnNum++;
+    playersTurn = (playersTurn == P1) ? P2 : P1;
 
     // If the program reached here, the move was valid
     return VALID_MOVE;

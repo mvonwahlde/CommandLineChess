@@ -1,6 +1,6 @@
 /*
 Author: Matthew VonWahlde
-Last Modified: 6/21/24
+Last Modified: 7/9/24
 Project: Command Line Chess
 File: Piece.h
 Description: The header file for the Piece object.
@@ -14,13 +14,19 @@ Description: The header file for the Piece object.
 // Top of the include chain, so I figured this would be a good place for including libraries and specifying that std namespace
 #include <math.h>
 #include <iostream>
+#include <string>
 
 using namespace std;
 
 // The characters that represent each of the pieces
-#define  PIECE_CHARACTER ' '
-#define  EMPTY_CHARACTER '-'
-#define  PAWN_CHARACTER 'P'
+#define PIECE_CHARACTER  ' '
+#define EMPTY_CHARACTER  '-'
+#define PAWN_CHARACTER   'P'
+#define KNIGHT_CHARACTER 'N'
+#define BISHOP_CHARACTER 'B'
+#define ROOK_CHARACTER   'R'
+#define QUEEN_CHARACTER  'Q'
+#define KING_CHARACTER   'K'
 
 // The integers that represent each of the players (and lack of)
 #define NULL_PLAYER 0
